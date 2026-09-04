@@ -2,10 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using pacientesAPI.Models;
-using System.Security.Cryptography.X509Certificates;
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Configuration; // Necessário para o IConfiguration
+using Microsoft.Extensions.Configuration;
 
 namespace pacientesAPI.Controllers
 {
@@ -43,7 +42,7 @@ namespace pacientesAPI.Controllers
         }
 
         // GET: api/pacientes/5
-        [HttpGet("{id}")] // Corrigido para bater com o nome do parâmetro 'id'
+        [HttpGet("{id}")]
         public IActionResult BuscarPorId(int id)
         {
             using (var connection = new SqlConnection(connectionString))
@@ -60,11 +59,11 @@ namespace pacientesAPI.Controllers
                     }
                 }
             }
-            return NotFound();
+            return NotFound(new { mensagem = "Paciente não encontrado." });
         }
 
         // GET: api/pacientes/nascimento/ano/1989
-        [HttpGet("nascimento/ano/{ano:int}")] // Corrigido para bater com a variável 'ano'
+        [HttpGet("nascimento/ano/{ano:int}")]
         public IActionResult BuscarPorIdadeEmRelacaoAoAno(int ano)
         {
             var listaPacientes = new List<Paciente>();
@@ -92,27 +91,31 @@ namespace pacientesAPI.Controllers
             return Ok(listaPacientes);
         }
 
+        // Método Auxiliar de Mapeamento com tratamento para valores Nulos (DBNull)
         private Paciente MapearPaciente(SqlDataReader reader)
         {
             return new Paciente
             {
                 id_paciente = (int)reader["id_paciente"],
+                id_responsavel = reader["id_responsavel"] != DBNull.Value ? (int?)reader["id_responsavel"] : null,
+                id_usuario_cadastro = reader["id_usuario_cadastro"] != DBNull.Value ? (int?)reader["id_usuario_cadastro"] : null,
                 nome_completo = reader["nome_completo"].ToString(),
                 data_nascimento = (DateTime)reader["data_nascimento"],
                 sexo = reader["sexo"].ToString(),
                 nome_mae = reader["nome_mae"].ToString(),
-                cpf = reader["cpf"].ToString(),
-                rg = reader["rg"].ToString(),
                 cns = reader["cns"].ToString(),
-                numero_prontuario = reader["numero_prontuario"].ToString(),
-                telefone = reader["telefone"].ToString(),
-                telefone_emergencia = reader["telefone_emergencia"].ToString(),
-                email = reader["email"].ToString(),
-                data_cadastro = (DateTime)reader["data_cadastro"]
+
+                cpf = reader["cpf"] != DBNull.Value ? reader["cpf"].ToString() : null,
+                rg = reader["rg"] != DBNull.Value ? reader["rg"].ToString() : null,
+                numero_prontuario = reader["numero_prontuario"] != DBNull.Value ? reader["numero_prontuario"].ToString() : null,
+                telefone = reader["telefone"] != DBNull.Value ? reader["telefone"].ToString() : null,
+                telefone_emergencia = reader["telefone_emergencia"] != DBNull.Value ? reader["telefone_emergencia"].ToString() : null,
+                email = reader["email"] != DBNull.Value ? reader["email"].ToString() : null,
+                data_cadastro = reader["data_cadastro"] != DBNull.Value ? (DateTime?)reader["data_cadastro"] : null
             };
         }
 
-        // Post 
+        // POST: api/pacientes
         [HttpPost]
         public IActionResult Criar([FromBody] Paciente paciente)
         {
@@ -120,25 +123,27 @@ namespace pacientesAPI.Controllers
             {
                 connection.Open();
 
-                string sql = "INSERT INTO Pacientes(Nome_Completo, data_nascimento, sexo, nome_mae, cpf, rg, cns, numero_prontuario, telefone, telefone_emergencia, email, data_cadastro) " +
-                             "VALUES(@nome_completo, @data_nascimento, @sexo, @nome_mae, @cpf, @rg, @cns, @numero_prontuario, @telefone, @telefone_emergencia, @email, @data_cadastro)";
+                string sql = @"
+                    INSERT INTO Pacientes(id_responsavel, id_usuario_cadastro, nome_completo, data_nascimento, sexo, nome_mae, cpf, rg, cns, numero_prontuario, telefone, telefone_emergencia, email, data_cadastro) 
+                    VALUES(@id_responsavel, @id_usuario_cadastro, @nome_completo, @data_nascimento, @sexo, @nome_mae, @cpf, @rg, @cns, @numero_prontuario, @telefone, @telefone_emergencia, @email, @data_cadastro)";
 
-                // Variável 'connection' adicionada ao SqlCommand
                 using (var command = new SqlCommand(sql, connection))
                 {
-                    // Trocado Paciente (Classe) por paciente (Objeto instanciado)
+                    command.Parameters.AddWithValue("@id_responsavel", (object)paciente.id_responsavel ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@id_usuario_cadastro", (object)paciente.id_usuario_cadastro ?? DBNull.Value);
                     command.Parameters.AddWithValue("@nome_completo", paciente.nome_completo);
                     command.Parameters.AddWithValue("@data_nascimento", paciente.data_nascimento);
                     command.Parameters.AddWithValue("@sexo", paciente.sexo);
                     command.Parameters.AddWithValue("@nome_mae", paciente.nome_mae);
-                    command.Parameters.AddWithValue("@cpf", paciente.cpf);
-                    command.Parameters.AddWithValue("@rg", paciente.rg);
                     command.Parameters.AddWithValue("@cns", paciente.cns);
-                    command.Parameters.AddWithValue("@numero_prontuario", paciente.numero_prontuario);
-                    command.Parameters.AddWithValue("@telefone", paciente.telefone);
-                    command.Parameters.AddWithValue("@telefone_emergencia", paciente.telefone_emergencia);
-                    command.Parameters.AddWithValue("@email", paciente.email);
 
+                    // Tratamento para evitar que campos nulos quebrem o banco de dados no POST
+                    command.Parameters.AddWithValue("@cpf", (object)paciente.cpf ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@rg", (object)paciente.rg ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@numero_prontuario", (object)paciente.numero_prontuario ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@telefone", (object)paciente.telefone ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@telefone_emergencia", (object)paciente.telefone_emergencia ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@email", (object)paciente.email ?? DBNull.Value);
                     command.Parameters.AddWithValue("@data_cadastro", DateTime.Now);
 
                     command.ExecuteNonQuery();
@@ -148,7 +153,7 @@ namespace pacientesAPI.Controllers
             return StatusCode(201, paciente);
         }
 
-        // PUT: api/pacientes/1
+        // PUT: api/pacientes/5
         [HttpPut("{id}")]
         public IActionResult Atualizar(int id, [FromBody] Paciente paciente)
         {
@@ -157,7 +162,8 @@ namespace pacientesAPI.Controllers
                 connection.Open();
                 string sql = @"
                     UPDATE pacientes 
-                    SET nome_completo = @nome_completo, 
+                    SET id_responsavel = @id_responsavel,
+                        nome_completo = @nome_completo, 
                         data_nascimento = @data_nascimento, 
                         sexo = @sexo,
                         nome_mae = @nome_mae, 
@@ -170,25 +176,24 @@ namespace pacientesAPI.Controllers
                         email = @email
                     WHERE id_paciente = @id_paciente";
 
-
                 using (var command = new SqlCommand(sql, connection))
                 {
+                    command.Parameters.AddWithValue("@id_responsavel", (object)paciente.id_responsavel ?? DBNull.Value);
                     command.Parameters.AddWithValue("@nome_completo", paciente.nome_completo);
                     command.Parameters.AddWithValue("@data_nascimento", paciente.data_nascimento);
                     command.Parameters.AddWithValue("@sexo", paciente.sexo);
                     command.Parameters.AddWithValue("@nome_mae", paciente.nome_mae);
 
-                    // Tratamento para evitar que campos nulos quebrem o banco de dados
+                    // Tratamento de nulos
                     command.Parameters.AddWithValue("@cpf", (object)paciente.cpf ?? DBNull.Value);
                     command.Parameters.AddWithValue("@rg", (object)paciente.rg ?? DBNull.Value);
-                    command.Parameters.AddWithValue("@cns", (object)paciente.cns ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@cns", (object)paciente.cns ?? DBNull.Value); // NOT NULL no BD, mas protegido aqui
                     command.Parameters.AddWithValue("@numero_prontuario", (object)paciente.numero_prontuario ?? DBNull.Value);
                     command.Parameters.AddWithValue("@telefone", (object)paciente.telefone ?? DBNull.Value);
                     command.Parameters.AddWithValue("@telefone_emergencia", (object)paciente.telefone_emergencia ?? DBNull.Value);
                     command.Parameters.AddWithValue("@email", (object)paciente.email ?? DBNull.Value);
 
                     command.Parameters.AddWithValue("@id_paciente", id);
-
 
                     int linhasAfetadas = command.ExecuteNonQuery();
 
@@ -199,7 +204,7 @@ namespace pacientesAPI.Controllers
                 }
             }
 
-            return NoContent(); // O padrão HTTP para PUT com sucesso é retornar 204 NoContent
+            return NoContent();
         }
 
         // DELETE: api/pacientes/5
@@ -210,9 +215,7 @@ namespace pacientesAPI.Controllers
             {
                 connection.Open();
 
-                string sql =
-                    "DELETE FROM pacientes WHERE id_paciente = @id_paciente";
-
+                string sql = "DELETE FROM pacientes WHERE id_paciente = @id_paciente";
 
                 using (var command = new SqlCommand(sql, connection))
                 {
@@ -227,7 +230,6 @@ namespace pacientesAPI.Controllers
                 }
             }
 
-            // Retorna 204 No Content (sucesso, sem conteúdo na resposta), que é o padrão correto para DELETE
             return NoContent();
         }
     }
