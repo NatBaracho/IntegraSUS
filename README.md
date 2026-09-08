@@ -1,8 +1,8 @@
-# IntegraSUS API 🏥
+# IntegraSUS API 
 
 O **IntegraSUS** é uma API RESTful desenvolvida em ASP.NET Core para o gerenciamento de registros de saúde de pacientes. O sistema permite cadastrar pacientes, vincular responsáveis (para menores de idade ou incapazes), associar o usuário do sistema que realizou o cadastro e gerenciar dados clínicos básicos.
 
-## 🛠️ Tecnologias Utilizadas
+##  Tecnologias Utilizadas
 
 * **Linguagem:** C# (.NET Core)
 * **Framework Web:** ASP.NET Core Web API
@@ -10,7 +10,7 @@ O **IntegraSUS** é uma API RESTful desenvolvida em ASP.NET Core para o gerencia
 * **Acesso a Dados:** ADO.NET puro (`Microsoft.Data.SqlClient`)
 * **Arquitetura:** MVC (Models, Controllers)
 
-## 🗄️ Estrutura do Banco de Dados
+##  Estrutura do Banco de Dados
 
 O banco de dados (`IntegraSUS_DB`) foi modelado com foco na integridade referencial, utilizando chaves estrangeiras (Foreign Keys) e validações robustas (Check Constraints).
 
@@ -21,7 +21,7 @@ O banco de dados (`IntegraSUS_DB`) foi modelado com foco na integridade referenc
 4. **`enderecos`**: Dados de localização do paciente.
 5. **`dados_clinicos`**: Informações de saúde (tipo sanguíneo, alergias, doenças crônicas).
 
-## 🚀 Como Executar o Projeto
+##  Como Executar o Projeto
 
 ### Pré-requisitos
 * [.NET 6.0 SDK](https://dotnet.microsoft.com/download) (ou superior)
