@@ -65,6 +65,23 @@ namespace DadosClinicosAPI.Controllers
 
             return NotFound("Dado clínico não encontrado!");
         }
+        // Método auxiliar para conversão do DataReader para o Model
+        private Models.Dados_Clinicos MapearDadoClinicos(SqlDataReader reader)
+        {
+            return new Models.Dados_Clinicos
+            {
+                id_dado_clinico = (int)reader["id_dado_clinico"],
+                id_paciente = (int)reader["id_paciente"],
+                id_usuario_registro = reader["id_usuario_registro"] != DBNull.Value ? (int?)reader["id_usuario_registro"] : null,
+                tipo_sanguineo = reader["tipo_sanguineo"] != DBNull.Value ? reader["tipo_sanguineo"].ToString() : null,
+                alergias = reader["alergias"] != DBNull.Value ? reader["alergias"].ToString() : null,
+                hipertensao = (bool)reader["hipertensao"],
+                diabetes = (bool)reader["diabetes"],
+                outras_doencas_cronicas = reader["outras_doencas_cronicas"] != DBNull.Value ? reader["outras_doencas_cronicas"].ToString() : null,
+                observacoes_medicas = reader["observacoes_medicas"] != DBNull.Value ? reader["observacoes_medicas"].ToString() : null,
+                data_registro = reader["data_registro"] != DBNull.Value ? (DateTime)reader["data_registro"] : DateTime.MinValue
+            };
+        }
 
         // POST: api/Dados_Clinicos
         [HttpPost]
@@ -154,22 +171,7 @@ namespace DadosClinicosAPI.Controllers
             return NoContent();
         }
 
-        // Método auxiliar para conversão do DataReader para o Model
-        private Models.Dados_Clinicos MapearDadoClinicos(SqlDataReader reader)
-        {
-            return new Models.Dados_Clinicos
-            {
-                id_dado_clinico = (int)reader["id_dado_clinico"],
-                id_paciente = (int)reader["id_paciente"],
-                id_usuario_registro = reader["id_usuario_registro"] != DBNull.Value ? (int?)reader["id_usuario_registro"] : null,
-                tipo_sanguineo = reader["tipo_sanguineo"] != DBNull.Value ? reader["tipo_sanguineo"].ToString() : null,
-                alergias = reader["alergias"] != DBNull.Value ? reader["alergias"].ToString() : null,
-                hipertensao = (bool)reader["hipertensao"],
-                diabetes = (bool)reader["diabetes"],
-                outras_doencas_cronicas = reader["outras_doencas_cronicas"] != DBNull.Value ? reader["outras_doencas_cronicas"].ToString() : null,
-                observacoes_medicas = reader["observacoes_medicas"] != DBNull.Value ? reader["observacoes_medicas"].ToString() : null,
-                data_registro = reader["data_registro"] != DBNull.Value ? (DateTime)reader["data_registro"] : DateTime.MinValue
-            };
-        }
+
+
     }
 }
