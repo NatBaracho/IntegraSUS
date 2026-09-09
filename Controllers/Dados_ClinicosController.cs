@@ -17,7 +17,8 @@ namespace DadosClinicosAPI.Controllers
 
         public Dados_ClinicosController(IConfiguration configuration)
         {
-            connectionStrings = configuration.GetConnectionString("IntegraSUSConnection");
+            connectionStrings = configuration.GetConnectionString("IntegraSUSConnection")
+                ?? throw new InvalidOperationException("Connection string 'IntegraSUSConnection' não configurada.");
         }
 
         // GET: api/Dados_Clinicos
@@ -75,8 +76,8 @@ namespace DadosClinicosAPI.Controllers
                 id_usuario_registro = reader["id_usuario_registro"] != DBNull.Value ? (int?)reader["id_usuario_registro"] : null,
                 tipo_sanguineo = reader["tipo_sanguineo"] != DBNull.Value ? reader["tipo_sanguineo"].ToString() : null,
                 alergias = reader["alergias"] != DBNull.Value ? reader["alergias"].ToString() : null,
-                hipertensao = (bool)reader["hipertensao"],
-                diabetes = (bool)reader["diabetes"],
+                hipertensao = reader["hipertensao"] != DBNull.Value && (bool)reader["hipertensao"],
+                diabetes = reader["diabetes"] != DBNull.Value && (bool)reader["diabetes"],
                 outras_doencas_cronicas = reader["outras_doencas_cronicas"] != DBNull.Value ? reader["outras_doencas_cronicas"].ToString() : null,
                 observacoes_medicas = reader["observacoes_medicas"] != DBNull.Value ? reader["observacoes_medicas"].ToString() : null,
                 data_registro = reader["data_registro"] != DBNull.Value ? (DateTime)reader["data_registro"] : DateTime.MinValue
