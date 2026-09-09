@@ -16,7 +16,8 @@ namespace pacientesAPI.Controllers
 
         public pacientesController(IConfiguration configuration)
         {
-            connectionString = configuration.GetConnectionString("IntegraSUSConnection");
+            connectionString = configuration.GetConnectionString("IntegraSUSConnection")
+                ?? throw new InvalidOperationException("Connection string 'IntegraSUSConnection' não configurada.");
         }
 
         // GET: api/pacientes
@@ -100,7 +101,7 @@ namespace pacientesAPI.Controllers
                 id_responsavel = reader["id_responsavel"] != DBNull.Value ? (int?)reader["id_responsavel"] : null,
                 id_usuario_cadastro = reader["id_usuario_cadastro"] != DBNull.Value ? (int?)reader["id_usuario_cadastro"] : null,
                 nome_completo = reader["nome_completo"].ToString(),
-                data_nascimento = (DateTime)reader["data_nascimento"],
+                data_nascimento = reader["data_nascimento"] != DBNull.Value ? (DateTime)reader["data_nascimento"] : default,
                 sexo = reader["sexo"].ToString(),
                 nome_mae = reader["nome_mae"].ToString(),
                 cns = reader["cns"].ToString(),
