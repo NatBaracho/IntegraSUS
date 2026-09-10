@@ -36,16 +36,4 @@ O banco de dados (`IntegraSUS_DB`) foi modelado com foco na integridade referenc
 ### 2. Configurar a Connection String
 No arquivo `appsettings.json`, certifique-se de configurar a sua conexão com o banco de dados SQL Server no bloco `ConnectionStrings`:
 
-```json
-{
-  "ConnectionStrings": {
-    "IntegraSUSConnection": "Server=SEU_SERVIDOR\\SQLEXPRESS;Database=IntegraSUS_DB;Trusted_Connection=True;Encrypt=False;"
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "AllowedHosts": "*"
-}
+
